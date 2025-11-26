@@ -1,11 +1,4 @@
 export default async function handler(req, res) {
-  // DEBUG - Remove after fixing
-  console.log('=== GROQ API KEY DEBUG ===');
-  console.log('Key exists:', !!process.env.GROQ_API_KEY);
-  console.log('Key length:', process.env.GROQ_API_KEY?.length || 0);
-  console.log('Starts with gsk_:', process.env.GROQ_API_KEY?.startsWith('gsk_'));
-  console.log('==========================');
-
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -21,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, conversationHistory } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -34,6 +27,25 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
+    // Build messages array with conversation history
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a helpful assistant for Lazul, a creative agency. Be friendly, professional, and concise.',
+      }
+    ];
+
+    // Add conversation history if provided (for context)
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      messages.push(...conversationHistory.slice(-10)); // Keep last 10 messages for context
+    }
+
+    // Add current message
+    messages.push({
+      role: 'user',
+      content: message,
+    });
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -42,16 +54,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'llama3-8b-8192',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant for Lazul, a creative agency.',
-          },
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
+        messages: messages,
         temperature: 0.7,
         max_tokens: 1024,
       }),
@@ -59,23 +62,34 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Groq API error:', JSON.stringify(errorData));
+      console.error('Groq API error:', errorData);
+      
+      // Handle specific error cases
+      if (response.status === 401) {
+        return res.status(500).json({ error: 'Authentication error. Please contact support.' });
+      }
+      if (response.status === 429) {
+        return res.status(429).json({ error: 'Too many requests. Please try again in a moment.' });
+      }
+      
       return res.status(response.status).json({ 
-        error: 'AI service error',
-        details: errorData 
+        error: 'AI service temporarily unavailable. Please try again.'
       });
     }
 
     const data = await response.json();
-    const aiMessage = data.choices[0]?.message?.content || 'No response';
+    const aiMessage = data.choices[0]?.message?.content;
+
+    if (!aiMessage) {
+      return res.status(500).json({ error: 'No response from AI' });
+    }
 
     return res.status(200).json({ response: aiMessage });
 
   } catch (error) {
     console.error('Error in chat handler:', error);
     return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
+      error: 'Something went wrong. Please try again.',
     });
   }
 }
