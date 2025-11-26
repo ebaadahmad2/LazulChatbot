@@ -48,11 +48,16 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'groq/compound',
         messages: messages,
         temperature: 1,
         max_tokens: 1024,
         top_p: 1,
+        compound_custom: {
+          tools: {
+            enabled_tools: ['web_search', 'code_interpreter', 'visit_website']
+          }
+        }
       }),
     });
 
