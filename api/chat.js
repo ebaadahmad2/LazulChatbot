@@ -35,9 +35,9 @@ export default async function handler(req, res) {
       }
     ];
 
-    // Add conversation history if provided (for context)
+    // Add conversation history if provided
     if (conversationHistory && Array.isArray(conversationHistory)) {
-      messages.push(...conversationHistory.slice(-10)); // Keep last 10 messages for context
+      messages.push(...conversationHistory.slice(-10));
     }
 
     // Add current message
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192', // ✅ Your chosen model
+        model: 'llama3-70b-8192',
         messages: messages,
         temperature: 0.7,
         max_tokens: 1024,
@@ -63,17 +63,8 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Groq API error:', errorData);
-      
-      // Handle specific error cases
-      if (response.status === 401) {
-        return res.status(500).json({ error: 'Authentication error. Please contact support.' });
-      }
-      if (response.status === 429) {
-        return res.status(429).json({ error: 'Too many requests. Please try again in a moment.' });
-      }
-      
-      return res.status(response.status).json({ 
-        error: 'AI service temporarily unavailable. Please try again.'
+      return res.status(500).json({ 
+        error: 'AI service error'
       });
     }
 
@@ -93,3 +84,4 @@ export default async function handler(req, res) {
     });
   }
 }
+
