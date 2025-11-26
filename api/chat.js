@@ -1,9 +1,17 @@
 export default async function handler(req, res) {
-  // CORS headers
+  // DEBUG - Remove after fixing
+  console.log('=== GROQ API KEY DEBUG ===');
+  console.log('Key exists:', !!process.env.GROQ_API_KEY);
+  console.log('Key length:', process.env.GROQ_API_KEY?.length || 0);
+  console.log('Starts with gsk_:', process.env.GROQ_API_KEY?.startsWith('gsk_'));
+  console.log('==========================');
+
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -12,56 +20,61 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Check API key
-  if (!process.env.GROQ_API_KEY) {
-    console.error('GROQ_API_KEY not found');
-    return res.status(500).json({ 
-      error: 'Server configuration error: API key missing' 
-    });
-  }
-
-  const { messages } = req.body;
-
-  if (!messages) {
-    return res.status(400).json({ error: 'Messages required' });
-  }
-
   try {
-    console.log('Calling Groq API...');
-    
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+    if (!GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
-        messages: messages,
+        model: 'llama3-8b-8192',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant for Lazul, a creative agency.',
+          },
+          {
+            role: 'user',
+            content: message,
+          },
+        ],
+        temperature: 0.7,
         max_tokens: 1024,
-        temperature: 0.7
-      })
+      }),
     });
 
-    console.log('Groq response status:', response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Groq API error:', errorText);
+      const errorData = await response.json();
+      console.error('Groq API error:', JSON.stringify(errorData));
       return res.status(response.status).json({ 
-        error: 'Groq API error', 
-        details: errorText 
+        error: 'AI service error',
+        details: errorData 
       });
     }
 
     const data = await response.json();
-    console.log('Success!');
-    return res.status(200).json(data);
-    
+    const aiMessage = data.choices[0]?.message?.content || 'No response';
+
+    return res.status(200).json({ response: aiMessage });
+
   } catch (error) {
-    console.error('Request failed:', error);
+    console.error('Error in chat handler:', error);
     return res.status(500).json({ 
-      error: 'Request failed', 
+      error: 'Internal server error',
       message: error.message 
     });
   }
