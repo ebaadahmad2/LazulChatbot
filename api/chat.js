@@ -1,3 +1,8 @@
+Perfect! Let's update your backend with that model:
+
+Updated api/chat.js for Vercel:
+Replace your entire api/chat.js file with this:
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -53,7 +58,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-70b-versatile', // ✅ Updated to current model
+        model: 'llama3-groq-70b-8192-tool-use-preview',
         messages: messages,
         temperature: 0.7,
         max_tokens: 1024,
