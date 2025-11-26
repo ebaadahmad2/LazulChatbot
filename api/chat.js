@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'llama-3.1-70b-versatile', // ✅ Updated to current model
         messages: messages,
         temperature: 0.7,
         max_tokens: 1024,
@@ -84,4 +84,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
