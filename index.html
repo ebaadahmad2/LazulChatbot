@@ -329,7 +329,12 @@
         }
 
         const data = await response.json();
-        const botMessage = data.choices[0].message.content;
+
+if (!response.ok) {
+  throw new Error(data.error || 'API error');
+}
+
+const botMessage = data.response;
 
         // Add bot response to conversation history
         conversationHistory.push({
