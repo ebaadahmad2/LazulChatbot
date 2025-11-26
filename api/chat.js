@@ -1,4 +1,4 @@
-xport default async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -11,7 +11,18 @@ xport default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Check if API key exists
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ 
+      error: 'GROQ_API_KEY is not configured in environment variables' 
+    });
+  }
+
   const { messages } = req.body;
+
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'Invalid messages format' });
+  }
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -28,9 +39,21 @@ xport default async function handler(req, res) {
       })
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(response.status).json({ 
+        error: 'Groq API error', 
+        details: errorData 
+      });
+    }
+
     const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'API request failed' });
+    console.error('API Error:', error);
+    res.status(500).json({ 
+      error: 'API request failed', 
+      message: error.message 
+    });
   }
 }
