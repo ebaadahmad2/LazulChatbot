@@ -1,1 +1,489 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lazul Chat v6</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      background: #000000;
+      color: #FFFFFF;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #1a1a1a;
+      padding: 2rem 1.5rem;
+      border-right: 1px solid #333333;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-tagline {
+      font-size: 0.9rem;
+      color: #999999;
+      font-weight: 400;
+    }
+
+    .main-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #000000;
+      width: 100%;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: #000000;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #333333;
+      border-radius: 4px;
+    }
+
+    .message {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 70%;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message-bubble {
+      padding: 0.875rem 1.25rem;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .message.user .message-bubble {
+      background: #0055ff;
+      color: #FFFFFF;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .message-bubble {
+      background: #333333;
+      color: #FFFFFF;
+      border-bottom-left-radius: 4px;
+    }
+
+    .input-container {
+      padding: 1.5rem 2rem;
+      background: #000000;
+      border-top: 1px solid #333333;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .input-box {
+      flex: 1;
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 24px;
+      padding: 0.875rem 1.25rem;
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-box::placeholder {
+      color: #666666;
+    }
+
+    .input-box:focus {
+      border-color: #0055ff;
+    }
+
+    .send-button {
+      background: #0044cc;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 24px;
+      padding: 0.875rem 2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .send-button:hover {
+      background: #0055ff;
+      transform: translateY(-1px);
+    }
+
+    .send-button:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+        padding: 1.5rem 1rem;
+      }
+
+      .sidebar-title {
+        font-size: 1.5rem;
+      }
+
+      .chat-messages {
+        padding: 1rem;
+      }
+
+      .message {
+        max-width: 85%;
+      }
+
+      .input-container {
+        padding: 1rem;
+      }
+
+      .send-button {
+        padding: 0.875rem 1.5rem;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="chat-container">
+   <aside class="sidebar">
+    <h1 class="sidebar-title" id="sidebarTitle">Lazul</h1>
+    <p class="sidebar-tagline" id="sidebarTagline">Made by Ebaad</p>
+   </aside>
+   <main class="main-chat">
+    <div class="chat-messages" id="chatMessages">
+     <div class="message bot">
+      <div class="message-bubble" id="welcomeMessage">
+       Hello! I'm Lazul. How can I help you today?
+      </div>
+     </div>
+    </div>
+    <div class="input-container">
+     <div class="input-wrapper"><input type="text" class="input-box" id="messageInput" placeholder="Type your message..." autocomplete="off"> <button class="send-button" id="sendButton">Send</button>
+     </div>
+    </div>
+   </main>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: '#000000',
+      surface_color: '#1a1a1a',
+      text_color: '#FFFFFF',
+      user_bubble_color: '#0055ff',
+      bot_bubble_color: '#333333',
+      send_button_color: '#0044cc',
+      sidebar_title: 'Lazul',
+      sidebar_tagline: 'Made by Ebaad',
+      welcome_message: "Hello! I'm Lazul. How can I help you today?",
+      input_placeholder: 'Type your message...'
+    };
+
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+
+    // API Configuration - Secure Vercel Proxy
+    const API_ENDPOINT = '/api/chat'; // Vercel serverless function endpoint
+
+    let conversationHistory = [];
+    let isProcessing = false;
+
+    function addMessage(text, isUser) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+      
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.className = 'message-bubble';
+      bubbleDiv.textContent = text;
+      
+      messageDiv.appendChild(bubbleDiv);
+      chatMessages.appendChild(messageDiv);
+      
+      // Scroll to bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      return bubbleDiv;
+    }
+
+    function showTypingIndicator() {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message bot typing-indicator';
+      messageDiv.id = 'typingIndicator';
+      
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.className = 'message-bubble';
+      bubbleDiv.textContent = '...';
+      
+      messageDiv.appendChild(bubbleDiv);
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    async function getBotResponse(userMessage) {
+      try {
+        // Add user message to conversation history
+        conversationHistory.push({
+          role: 'user',
+          content: userMessage
+        });
+
+        // Call Vercel proxy endpoint (no API key needed in frontend)
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: conversationHistory
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const botMessage = data.choices[0].message.content;
+
+        // Add bot response to conversation history
+        conversationHistory.push({
+          role: 'assistant',
+          content: botMessage
+        });
+
+        return botMessage;
+
+      } catch (error) {
+        console.error('Error calling chatbot API:', error);
+        return "I'm having trouble connecting right now. Please check your backend configuration and try again.";
+      }
+    }
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      
+      if (message === '' || isProcessing) return;
+      
+      isProcessing = true;
+      sendButton.disabled = true;
+      sendButton.style.opacity = '0.6';
+      
+      // Add user message
+      addMessage(message, true);
+      messageInput.value = '';
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // Get bot response from API
+      const botResponse = await getBotResponse(message);
+      
+      // Remove typing indicator and show response
+      removeTypingIndicator();
+      addMessage(botResponse, false);
+      
+      isProcessing = false;
+      sendButton.disabled = false;
+      sendButton.style.opacity = '1';
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !isProcessing) {
+        sendMessage();
+      }
+    });
+
+    async function onConfigChange(config) {
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const userBubbleColor = config.user_bubble_color || defaultConfig.user_bubble_color;
+      const botBubbleColor = config.bot_bubble_color || defaultConfig.bot_bubble_color;
+      const sendButtonColor = config.send_button_color || defaultConfig.send_button_color;
+
+      document.body.style.background = backgroundColor;
+      document.querySelector('.main-chat').style.background = backgroundColor;
+      document.querySelector('.sidebar').style.background = surfaceColor;
+      document.querySelector('.input-container').style.background = backgroundColor;
+      
+      document.querySelector('.sidebar-title').style.color = textColor;
+      document.querySelector('.input-box').style.background = backgroundColor;
+      document.querySelector('.input-box').style.color = textColor;
+      document.querySelector('.send-button').style.background = sendButtonColor;
+      document.querySelector('.send-button').style.color = textColor;
+
+      // Update all existing messages
+      document.querySelectorAll('.message.user .message-bubble').forEach(bubble => {
+        bubble.style.background = userBubbleColor;
+        bubble.style.color = textColor;
+      });
+
+      document.querySelectorAll('.message.bot .message-bubble').forEach(bubble => {
+        bubble.style.background = botBubbleColor;
+        bubble.style.color = textColor;
+      });
+
+      document.getElementById('sidebarTitle').textContent = config.sidebar_title || defaultConfig.sidebar_title;
+      document.getElementById('sidebarTagline').textContent = config.sidebar_tagline || defaultConfig.sidebar_tagline;
+      document.getElementById('welcomeMessage').textContent = config.welcome_message || defaultConfig.welcome_message;
+      messageInput.placeholder = config.input_placeholder || defaultConfig.input_placeholder;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.surface_color || defaultConfig.surface_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.user_bubble_color || defaultConfig.user_bubble_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ user_bubble_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.bot_bubble_color || defaultConfig.bot_bubble_color,
+            set: (value) => {
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ bot_bubble_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['sidebar_title', config.sidebar_title || defaultConfig.sidebar_title],
+        ['sidebar_tagline', config.sidebar_tagline || defaultConfig.sidebar_tagline],
+        ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
+        ['input_placeholder', config.input_placeholder || defaultConfig.input_placeholder]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a496f44e09dd77e',t:'MTc2NDE2MDYyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
