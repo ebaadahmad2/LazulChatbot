@@ -48,10 +48,11 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-groq-70b-8192-tool-use-preview',
+        model: 'llama-3.1-8b-instant',
         messages: messages,
-        temperature: 0.7,
+        temperature: 1,
         max_tokens: 1024,
+        top_p: 1,
       }),
     });
 
