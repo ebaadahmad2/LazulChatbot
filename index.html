@@ -3,55 +3,49 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lazul - AI Chat Assistant</title>
-  <script src="/_sdk/element_sdk.js"></script>
+  <title>Lazul Chat</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
       box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #000000;
-      height: 100%;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
       width: 100%;
       overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
     html {
-      height: 100%;
+      height: 100vh;
       width: 100%;
     }
 
     .chat-container {
       display: flex;
-      height: 100%;
+      height: 100vh;
       width: 100%;
     }
 
     .sidebar {
-      width: 280px;
+      width: 260px;
       background: #1a1a1a;
       padding: 2rem 1.5rem;
-      border-right: 1px solid #333333;
       display: flex;
       flex-direction: column;
+      border-right: 1px solid #333;
     }
 
     .sidebar-title {
       font-size: 2rem;
-      font-weight: 700;
+      font-weight: bold;
       color: #FFFFFF;
-      margin-bottom: 0.5rem;
+      margin: 0 0 0.5rem 0;
     }
 
     .sidebar-tagline {
       font-size: 0.9rem;
-      color: #888888;
-      margin-bottom: 2rem;
+      color: #888;
+      margin: 0;
     }
 
     .main-chat {
@@ -59,7 +53,7 @@
       display: flex;
       flex-direction: column;
       background: #000000;
-      height: 100%;
+      width: 100%;
     }
 
     .chat-messages {
@@ -71,33 +65,9 @@
       gap: 1rem;
     }
 
-    .chat-messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .chat-messages::-webkit-scrollbar-track {
-      background: #000000;
-    }
-
-    .chat-messages::-webkit-scrollbar-thumb {
-      background: #333333;
-      border-radius: 4px;
-    }
-
     .message {
       display: flex;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      width: 100%;
     }
 
     .message.user {
@@ -109,108 +79,104 @@
     }
 
     .message-bubble {
+      padding: 0.875rem 1.25rem;
+      border-radius: 1.25rem;
       max-width: 70%;
-      padding: 1rem 1.25rem;
-      border-radius: 18px;
+      word-wrap: break-word;
       font-size: 0.95rem;
       line-height: 1.5;
-      word-wrap: break-word;
     }
 
     .message.user .message-bubble {
       background: #0055ff;
       color: #FFFFFF;
-      border-bottom-right-radius: 4px;
+      border-bottom-right-radius: 0.25rem;
     }
 
     .message.bot .message-bubble {
       background: #333333;
       color: #FFFFFF;
-      border-bottom-left-radius: 4px;
-    }
-
-    .typing-indicator .message-bubble {
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 0.6;
-      }
-      50% {
-        opacity: 1;
-      }
+      border-bottom-left-radius: 0.25rem;
     }
 
     .input-container {
-      padding: 1.5rem 2rem;
       background: #000000;
-      border-top: 1px solid #333333;
+      padding: 1.5rem 2rem;
+      border-top: 1px solid #333;
     }
 
     .input-wrapper {
       display: flex;
-      gap: 0.75rem;
-      align-items: center;
+      gap: 1rem;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     .input-box {
       flex: 1;
-      background: #000000;
-      border: 1px solid #333333;
-      border-radius: 24px;
       padding: 0.875rem 1.25rem;
+      border: 1px solid #333;
+      border-radius: 1.5rem;
+      background: #000000;
       color: #FFFFFF;
       font-size: 0.95rem;
       outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .input-box::placeholder {
-      color: #666666;
+      transition: border-color 0.2s;
     }
 
     .input-box:focus {
       border-color: #0055ff;
     }
 
+    .input-box::placeholder {
+      color: #666;
+    }
+
     .send-button {
+      padding: 0.875rem 2rem;
       background: #0044cc;
       color: #FFFFFF;
       border: none;
-      border-radius: 24px;
-      padding: 0.875rem 2rem;
-      font-size: 0.95rem;
+      border-radius: 1.5rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
+      font-size: 0.95rem;
+      transition: all 0.2s;
     }
 
-    .send-button:hover {
+    .send-button:hover:not(:disabled) {
       background: #0055ff;
       transform: translateY(-1px);
     }
 
-    .send-button:active {
-      transform: translateY(0);
+    .send-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .typing-indicator .message-bubble {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
     }
 
     @media (max-width: 768px) {
       .sidebar {
-        width: 200px;
-        padding: 1.5rem 1rem;
-      }
-
-      .sidebar-title {
-        font-size: 1.5rem;
+        display: none;
       }
 
       .chat-messages {
         padding: 1rem;
       }
 
-      .message {
+      .message-bubble {
         max-width: 85%;
       }
 
@@ -225,18 +191,19 @@
   </style>
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
  </head>
  <body>
   <div class="chat-container">
    <aside class="sidebar">
-    <h1 class="sidebar-title" id="sidebarTitle">Lazul</h1>
-    <p class="sidebar-tagline" id="sidebarTagline">Made by Ebaad</p>
+    <h1 class="sidebar-title">Lazul</h1>
+    <p class="sidebar-tagline">Made by Ebaad</p>
    </aside>
    <main class="main-chat">
     <div class="chat-messages" id="chatMessages">
      <div class="message bot">
-      <div class="message-bubble" id="welcomeMessage">
+      <div class="message-bubble">
        Hello! I'm Lazul. How can I help you today?
       </div>
      </div>
@@ -248,24 +215,10 @@
    </main>
   </div>
   <script>
-    const defaultConfig = {
-      background_color: '#000000',
-      surface_color: '#1a1a1a',
-      text_color: '#FFFFFF',
-      user_bubble_color: '#0055ff',
-      bot_bubble_color: '#333333',
-      send_button_color: '#0044cc',
-      sidebar_title: 'Lazul',
-      sidebar_tagline: 'Made by Ebaad',
-      welcome_message: "Hello! I'm Lazul. How can I help you today?",
-      input_placeholder: 'Type your message...'
-    };
-
     const chatMessages = document.getElementById('chatMessages');
     const messageInput = document.getElementById('messageInput');
     const sendButton = document.getElementById('sendButton');
 
-    // API Configuration - Secure Vercel Proxy
     const API_ENDPOINT = 'https://lazul-chatbot.vercel.app/api/chat';
 
     let conversationHistory = [];
@@ -282,7 +235,6 @@
       messageDiv.appendChild(bubbleDiv);
       chatMessages.appendChild(messageDiv);
       
-      // Scroll to bottom
       chatMessages.scrollTop = chatMessages.scrollHeight;
       
       return bubbleDiv;
@@ -311,13 +263,11 @@
 
     async function getBotResponse(userMessage) {
       try {
-        // Add user message to conversation history
         conversationHistory.push({
           role: 'user',
           content: userMessage
         });
 
-        // Call Vercel proxy endpoint (no API key needed in frontend)
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -336,7 +286,6 @@
 
         const botMessage = data.response;
 
-        // Add bot response to conversation history
         conversationHistory.push({
           role: 'assistant',
           content: botMessage
@@ -357,25 +306,19 @@
       
       isProcessing = true;
       sendButton.disabled = true;
-      sendButton.style.opacity = '0.6';
-      
-      // Add user message
+
       addMessage(message, true);
       messageInput.value = '';
       
-      // Show typing indicator
       showTypingIndicator();
       
-      // Get bot response from API
       const botResponse = await getBotResponse(message);
       
-      // Remove typing indicator and show response
       removeTypingIndicator();
       addMessage(botResponse, false);
       
       isProcessing = false;
       sendButton.disabled = false;
-      sendButton.style.opacity = '1';
     }
 
     sendButton.addEventListener('click', sendMessage);
@@ -385,110 +328,6 @@
         sendMessage();
       }
     });
-
-    async function onConfigChange(config) {
-      const backgroundColor = config.background_color || defaultConfig.background_color;
-      const surfaceColor = config.surface_color || defaultConfig.surface_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const userBubbleColor = config.user_bubble_color || defaultConfig.user_bubble_color;
-      const botBubbleColor = config.bot_bubble_color || defaultConfig.bot_bubble_color;
-      const sendButtonColor = config.send_button_color || defaultConfig.send_button_color;
-
-      document.body.style.background = backgroundColor;
-      document.querySelector('.main-chat').style.background = backgroundColor;
-      document.querySelector('.sidebar').style.background = surfaceColor;
-      document.querySelector('.input-container').style.background = backgroundColor;
-      
-      document.querySelector('.sidebar-title').style.color = textColor;
-      document.querySelector('.input-box').style.background = backgroundColor;
-      document.querySelector('.input-box').style.color = textColor;
-      document.querySelector('.send-button').style.background = sendButtonColor;
-      document.querySelector('.send-button').style.color = textColor;
-
-      // Update all existing messages
-      document.querySelectorAll('.message.user .message-bubble').forEach(bubble => {
-        bubble.style.background = userBubbleColor;
-        bubble.style.color = textColor;
-      });
-
-      document.querySelectorAll('.message.bot .message-bubble').forEach(bubble => {
-        bubble.style.background = botBubbleColor;
-        bubble.style.color = textColor;
-      });
-
-      document.getElementById('sidebarTitle').textContent = config.sidebar_title || defaultConfig.sidebar_title;
-      document.getElementById('sidebarTagline').textContent = config.sidebar_tagline || defaultConfig.sidebar_tagline;
-      document.getElementById('welcomeMessage').textContent = config.welcome_message || defaultConfig.welcome_message;
-      messageInput.placeholder = config.input_placeholder || defaultConfig.input_placeholder;
-    }
-
-    function mapToCapabilities(config) {
-      return {
-        recolorables: [
-          {
-            get: () => config.background_color || defaultConfig.background_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ background_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.surface_color || defaultConfig.surface_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ surface_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.text_color || defaultConfig.text_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ text_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.user_bubble_color || defaultConfig.user_bubble_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ user_bubble_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.bot_bubble_color || defaultConfig.bot_bubble_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ bot_bubble_color: value });
-              }
-            }
-          }
-        ],
-        borderables: [],
-        fontEditable: undefined,
-        fontSizeable: undefined
-      };
-    }
-
-    function mapToEditPanelValues(config) {
-      return new Map([
-        ['sidebar_title', config.sidebar_title || defaultConfig.sidebar_title],
-        ['sidebar_tagline', config.sidebar_tagline || defaultConfig.sidebar_tagline],
-        ['welcome_message', config.welcome_message || defaultConfig.welcome_message],
-        ['input_placeholder', config.input_placeholder || defaultConfig.input_placeholder]
-      ]);
-    }
-
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange,
-        mapToCapabilities,
-        mapToEditPanelValues
-      });
-    }
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a4a37e8a4f2cd8d',t:'MTc2NDE2ODgzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a4a66eee169bef6',t:'MTc2NDE3MDc2NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
