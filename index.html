@@ -340,9 +340,9 @@
         return botMessage;
 
       } catch (error) {
-        console.error('Error calling chatbot API:', error);
-        return "I'm having trouble connecting right now. Please check your backend configuration and try again.";
-      }
+  console.error('Error calling chatbot API:', error);
+  return "I'm having trouble right now. Please try again in a moment.";
+}
     }
 
     async function sendMessage() {
