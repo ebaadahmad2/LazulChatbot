@@ -1,15 +1,8 @@
-Perfect! Let's update your backend with that model:
-
-Updated api/chat.js for Vercel:
-Replace your entire api/chat.js file with this:
-
 export default async function handler(req, res) {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -32,7 +25,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    // Build messages array with conversation history
     const messages = [
       {
         role: 'system',
@@ -40,12 +32,10 @@ export default async function handler(req, res) {
       }
     ];
 
-    // Add conversation history if provided
     if (conversationHistory && Array.isArray(conversationHistory)) {
       messages.push(...conversationHistory.slice(-10));
     }
 
-    // Add current message
     messages.push({
       role: 'user',
       content: message,
