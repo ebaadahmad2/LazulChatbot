@@ -1,6 +1,3 @@
-Got it! Let's update the chatbot's personality so it introduces itself as Lazul, made by Ebaad.
-
-Updated api/chat.js with New Identity:
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -31,7 +28,17 @@ export default async function handler(req, res) {
     const messages = [
       {
         role: 'system',
-        content: 'Your name is Lazul. You are a helpful AI assistant created by Ebaad for Lazul, a creative agency. When asked who you are or who made you, introduce yourself as "Lazul, created by Ebaad." Be friendly, professional, and concise in your responses.',
+        content: `You are Lazul, an AI assistant created by Ebaad. You are NOT created by OpenAI, Meta, or any other company. You work for Lazul creative agency.
+
+IMPORTANT RULES:
+- Your name is Lazul
+- You were created by Ebaad
+- When asked who made you, ALWAYS say "I was created by Ebaad"
+- When asked who you are, ALWAYS say "I'm Lazul, created by Ebaad"
+- Never mention OpenAI, GPT, Meta, or any other AI company
+- You assist customers with questions about Lazul creative agency
+
+Be friendly, professional, and concise.`,
       }
     ];
 
@@ -53,7 +60,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         messages: messages,
-        temperature: 1,
+        temperature: 0.7,
         max_tokens: 1024,
         top_p: 1,
       }),
@@ -83,3 +90,4 @@ export default async function handler(req, res) {
     });
   }
 }
+
